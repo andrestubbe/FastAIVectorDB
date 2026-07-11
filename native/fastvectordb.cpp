@@ -1,1 +1,128 @@
-#include "fastvectordb.h"\r\n#include <windows.h>\r\n#include <vector>\r\n#include <algorithm>\r\n#include <cmath>\r\n\r\n/**\r\n * @file fastvectordb.cpp\r\n * @brief Native JNI implementation for FastAIVectorDB\r\n *\r\n * Phase 1: Linear scan with cosine similarity.\r\n * Phase 2 (planned): AVX2/AVX512 SIMD + HNSW index.\r\n *\r\n * search() returns a flat jintArray with interleaved pairs:\r\n *   [id0, Float.floatToIntBits(score0), id1, Float.floatToIntBits(score1), ...]\r\n */\r\n\r\n// ============================================================================\r\n// Internal Data Structures\r\n// ============================================================================\r\n\r\nstruct Entry {\r\n    int id;\r\n    std::vector<float> vector;\r\n};\r\n\r\nstruct Index {\r\n    std::vector<Entry> entries;\r\n};\r\n\r\n// ============================================================================\r\n// DLL Entry Point\r\n// ============================================================================\r\n\r\nBOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {\r\n    switch (ul_reason_for_call) {\r\n        case DLL_PROCESS_ATTACH:\r\n            DisableThreadLibraryCalls(hModule);\r\n            break;\r\n        case DLL_PROCESS_DETACH:\r\n            break;\r\n    }\r\n    return TRUE;\r\n}\r\n\r\n// ============================================================================\r\n// Internal Helpers\r\n// ============================================================================\r\n\r\nstatic float cosineSimilarity(const float* a, const float* b, int len) {\r\n    float dot = 0.f, normA = 0.f, normB = 0.f;\r\n    for (int i = 0; i < len; i++) {\r\n        dot   += a[i] * b[i];\r\n        normA += a[i] * a[i];\r\n        normB += b[i] * b[i];\r\n    }\r\n    float denom = sqrtf(normA) * sqrtf(normB);\r\n    return denom == 0.f ? 0.f : dot / denom;\r\n}\r\n\r\n// ============================================================================\r\n// JNI Implementations\r\n// ============================================================================\r\n\r\nJNIEXPORT jlong JNICALL Java_fastaivectordb_FastVectorDBNative_create\r\n  (JNIEnv* env, jclass) {\r\n    return reinterpret_cast<jlong>(new Index());\r\n}\r\n\r\nJNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_insert\r\n  (JNIEnv* env, jclass, jlong ptr, jint id, jfloatArray arr) {\r\n    Index* idx = reinterpret_cast<Index*>(ptr);\r\n    jsize len = env->GetArrayLength(arr);\r\n    Entry e;\r\n    e.id = id;\r\n    e.vector.resize(len);\r\n    env->GetFloatArrayRegion(arr, 0, len, e.vector.data());\r\n    idx->entries.push_back(std::move(e));\r\n}\r\n\r\nJNIEXPORT jintArray JNICALL Java_fastaivectordb_FastVectorDBNative_search\r\n  (JNIEnv* env, jclass, jlong ptr, jfloatArray arr, jint k) {\r\n    Index* idx = reinterpret_cast<Index*>(ptr);\r\n\r\n    jsize qlen = env->GetArrayLength(arr);\r\n    std::vector<float> query(qlen);\r\n    env->GetFloatArrayRegion(arr, 0, qlen, query.data());\r\n\r\n    // Score all entries\r\n    std::vector<std::pair<float, int>> scores;\r\n    scores.reserve(idx->entries.size());\r\n    for (const auto& e : idx->entries) {\r\n        int len = (int)std::min((size_t)qlen, e.vector.size());\r\n        float score = cosineSimilarity(query.data(), e.vector.data(), len);\r\n        scores.emplace_back(score, e.id);\r\n    }\r\n\r\n    // Partial sort: top-k descending\r\n    std::sort(scores.begin(), scores.end(),\r\n              [](const auto& a, const auto& b) { return a.first > b.first; });\r\n\r\n    int actual = (int)std::min((size_t)k, scores.size());\r\n\r\n    // Return interleaved [id, Float.floatToIntBits(score), ...]\r\n    jintArray result = env->NewIntArray(actual * 2);\r\n    std::vector<jint> raw(actual * 2);\r\n    for (int i = 0; i < actual; i++) {\r\n        raw[i * 2]     = scores[i].second;                              // id\r\n        raw[i * 2 + 1] = *reinterpret_cast<const jint*>(&scores[i].first); // score bits\r\n    }\r\n    env->SetIntArrayRegion(result, 0, actual * 2, raw.data());\r\n    return result;\r\n}\r\n\r\nJNIEXPORT jint JNICALL Java_fastaivectordb_FastVectorDBNative_size\r\n  (JNIEnv* env, jclass, jlong ptr) {\r\n    return (jint)reinterpret_cast<Index*>(ptr)->entries.size();\r\n}\r\n\r\nJNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_clear\r\n  (JNIEnv* env, jclass, jlong ptr) {\r\n    reinterpret_cast<Index*>(ptr)->entries.clear();\r\n}\r\n\r\nJNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_free\r\n  (JNIEnv* env, jclass, jlong ptr) {\r\n    delete reinterpret_cast<Index*>(ptr);\r\n}\r\n
+#include "fastvectordb.h"
+#include <windows.h>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+/**
+ * @file fastvectordb.cpp
+ * @brief Native JNI implementation for FastAIVectorDB
+ *
+ * Phase 1: Linear scan with cosine similarity.
+ * Phase 2 (planned): AVX2/AVX512 SIMD + HNSW index.
+ *
+ * search() returns a flat jintArray with interleaved pairs:
+ *   [id0, Float.floatToIntBits(score0), id1, Float.floatToIntBits(score1), ...]
+ */
+
+// ============================================================================
+// Internal Data Structures
+// ============================================================================
+
+struct Entry {
+    int id;
+    std::vector<float> vector;
+};
+
+struct Index {
+    std::vector<Entry> entries;
+};
+
+// ============================================================================
+// DLL Entry Point
+// ============================================================================
+
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
+    switch (ul_reason_for_call) {
+        case DLL_PROCESS_ATTACH:
+            DisableThreadLibraryCalls(hModule);
+            break;
+        case DLL_PROCESS_DETACH:
+            break;
+    }
+    return TRUE;
+}
+
+// ============================================================================
+// Internal Helpers
+// ============================================================================
+
+static float cosineSimilarity(const float* a, const float* b, int len) {
+    float dot = 0.f, normA = 0.f, normB = 0.f;
+    for (int i = 0; i < len; i++) {
+        dot   += a[i] * b[i];
+        normA += a[i] * a[i];
+        normB += b[i] * b[i];
+    }
+    float denom = sqrtf(normA) * sqrtf(normB);
+    return denom == 0.f ? 0.f : dot / denom;
+}
+
+// ============================================================================
+// JNI Implementations
+// ============================================================================
+
+JNIEXPORT jlong JNICALL Java_fastaivectordb_FastVectorDBNative_create
+  (JNIEnv* env, jclass) {
+    return reinterpret_cast<jlong>(new Index());
+}
+
+JNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_insert
+  (JNIEnv* env, jclass, jlong ptr, jint id, jfloatArray arr) {
+    Index* idx = reinterpret_cast<Index*>(ptr);
+    jsize len = env->GetArrayLength(arr);
+    Entry e;
+    e.id = id;
+    e.vector.resize(len);
+    env->GetFloatArrayRegion(arr, 0, len, e.vector.data());
+    idx->entries.push_back(std::move(e));
+}
+
+JNIEXPORT jintArray JNICALL Java_fastaivectordb_FastVectorDBNative_search
+  (JNIEnv* env, jclass, jlong ptr, jfloatArray arr, jint k) {
+    Index* idx = reinterpret_cast<Index*>(ptr);
+
+    jsize qlen = env->GetArrayLength(arr);
+    std::vector<float> query(qlen);
+    env->GetFloatArrayRegion(arr, 0, qlen, query.data());
+
+    // Score all entries
+    std::vector<std::pair<float, int>> scores;
+    scores.reserve(idx->entries.size());
+    for (const auto& e : idx->entries) {
+        int len = (int)std::min((size_t)qlen, e.vector.size());
+        float score = cosineSimilarity(query.data(), e.vector.data(), len);
+        scores.emplace_back(score, e.id);
+    }
+
+    // Partial sort: top-k descending
+    std::sort(scores.begin(), scores.end(),
+              [](const auto& a, const auto& b) { return a.first > b.first; });
+
+    int actual = (int)std::min((size_t)k, scores.size());
+
+    // Return interleaved [id, Float.floatToIntBits(score), ...]
+    jintArray result = env->NewIntArray(actual * 2);
+    std::vector<jint> raw(actual * 2);
+    for (int i = 0; i < actual; i++) {
+        raw[i * 2]     = scores[i].second;                              // id
+        raw[i * 2 + 1] = *reinterpret_cast<const jint*>(&scores[i].first); // score bits
+    }
+    env->SetIntArrayRegion(result, 0, actual * 2, raw.data());
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_fastaivectordb_FastVectorDBNative_size
+  (JNIEnv* env, jclass, jlong ptr) {
+    return (jint)reinterpret_cast<Index*>(ptr)->entries.size();
+}
+
+JNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_clear
+  (JNIEnv* env, jclass, jlong ptr) {
+    reinterpret_cast<Index*>(ptr)->entries.clear();
+}
+
+JNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_free
+  (JNIEnv* env, jclass, jlong ptr) {
+    delete reinterpret_cast<Index*>(ptr);
+}
