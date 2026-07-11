@@ -35,9 +35,6 @@ public final class FastVectorDB implements VectorStore {
                     } catch (UnsatisfiedLinkError ignored) {}
                 }
             } catch (Throwable ignored) {}
-            if (!loaded) {
-                System.err.println("FastVectorDB: native lib loader failed — using Java fallback.");
-            }
         }
         NATIVE_AVAILABLE = loaded;
     }
