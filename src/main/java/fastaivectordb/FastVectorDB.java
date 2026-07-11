@@ -17,24 +17,26 @@ public final class FastVectorDB implements VectorStore {
     static {
         boolean loaded = false;
         try {
-            System.loadLibrary("fastvectordb");
+            fastcore.LibraryLoader.load("fastvectordb", FastVectorDB.class);
             loaded = true;
-        } catch (UnsatisfiedLinkError e) {
-            String userDir = System.getProperty("user.dir");
-            String[] dirs = {
-                userDir + "\\lib\\",
-                userDir + "\\build\\",
-                userDir + "\\"
-            };
-            for (String dir : dirs) {
-                try {
-                    System.load(dir + "fastvectordb.dll");
-                    loaded = true;
-                    break;
-                } catch (UnsatisfiedLinkError ignored) {}
-            }
+        } catch (Throwable e) {
+            try {
+                String userDir = System.getProperty("user.dir");
+                String[] dirs = {
+                    userDir + "\\lib\\",
+                    userDir + "\\build\\",
+                    userDir + "\\"
+                };
+                for (String dir : dirs) {
+                    try {
+                        System.load(dir + "fastvectordb.dll");
+                        loaded = true;
+                        break;
+                    } catch (UnsatisfiedLinkError ignored) {}
+                }
+            } catch (Throwable ignored) {}
             if (!loaded) {
-                System.err.println("FastVectorDB: native lib not found — using Java fallback.");
+                System.err.println("FastVectorDB: native lib loader failed — using Java fallback.");
             }
         }
         NATIVE_AVAILABLE = loaded;
