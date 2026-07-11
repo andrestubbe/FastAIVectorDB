@@ -1,0 +1,1 @@
+# IDE files\r\n.vscode/\r\n.idea/\r\n*.iml\r\n\r\n# OS files\r\nThumbs.db\r\n.DS_Store\r\n\r\n# Build artifacts\r\n/target/\r\n/build/\r\n/out/\r\n\r\n# Release Staging (Private Templates)\r\n/release/\r\n

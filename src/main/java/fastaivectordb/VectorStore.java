@@ -1,0 +1,1 @@
+package fastaivectordb;\r\n\r\nimport java.util.List;\r\n\r\npublic interface VectorStore extends AutoCloseable {\r\n\r\n    void insert(VectorEntry entry);\r\n\r\n    List<SearchResult> search(float[] query, int k);\r\n\r\n    int size();\r\n\r\n    void clear();\r\n\r\n    @Override\r\n    default void close() throws Exception {\r\n    }\r\n}\r\n
