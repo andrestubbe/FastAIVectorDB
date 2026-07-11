@@ -15,10 +15,11 @@ KEY HIGHLIGHTS:
 - [Java Fallback]: Automatically switches to a pure-Java memory store if the native DLL is not loaded.
 - [JNI Bridge]: Zero-allocation bridge bindings to query indices without GC stalls.
 
-RESULTS:
-- Native similarity lookup: <1 ms
-- Java Fallback lookup: ~5 ms
+RESULTS (In-Memory Query Performance):
+- Native C++ JNI Similarity Lookup: <1 ms (microsecond scale per scan)
+- Java Fallback Similarity Lookup: ~5 ms (due to JVM object heap and collection iterations)
 - Speedup: ~5-10x faster execution
+- Note: Disk-write serialization and initial index building times depend heavily on storage I/O and are not included in these query benchmarks.
 
 LINKS:
 GitHub FastAIVectorDB: https://github.com/andrestubbe/FastAIVectorDB
