@@ -1,1 +1,120 @@
-package fastaivectordb;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\nimport java.util.Map;\r\nimport java.util.concurrent.ConcurrentHashMap;\r\n\r\n/**\r\n * Ultrafast vector store backed by a native C++ engine (JNI).\r\n * Automatically falls back to {@link InMemoryVectorStore} if the native\r\n * library cannot be loaded (e.g., during tests or when the DLL is absent).\r\n *\r\n * <pre>{@code\r\n * try (FastVectorDB db = new FastVectorDB()) {\r\n *     db.insert(new VectorEntry(0, embedding, \"Hello World\"));\r\n *     List<SearchResult> hits = db.search(queryVec, 5);\r\n * }\r\n * }</pre>\r\n */\r\npublic final class FastVectorDB implements VectorStore {\r\n\r\n    private static final boolean NATIVE_AVAILABLE;\r\n\r\n    static {\r\n        boolean loaded = false;\r\n        try {\r\n            System.loadLibrary(\"fastvectordb\");\r\n            loaded = true;\r\n        } catch (UnsatisfiedLinkError e) {\r\n            String userDir = System.getProperty(\"user.dir\");\r\n            String[] dirs = {\r\n                userDir + \"\\\\lib\\\\\",\r\n                userDir + \"\\\\build\\\\\",\r\n                userDir + \"\\\\\"\r\n            };\r\n            for (String dir : dirs) {\r\n                try {\r\n                    System.load(dir + \"fastvectordb.dll\");\r\n                    loaded = true;\r\n                    break;\r\n                } catch (UnsatisfiedLinkError ignored) {}\r\n            }\r\n            if (!loaded) {\r\n                System.err.println(\"FastVectorDB: native lib not found — using Java fallback.\");\r\n            }\r\n        }\r\n        NATIVE_AVAILABLE = loaded;\r\n    }\r\n\r\n    private final long ptr;\r\n    private final InMemoryVectorStore fallback;\r\n    private final Map<Integer, VectorEntry> textMap = new ConcurrentHashMap<>();\r\n    private volatile boolean closed = false;\r\n\r\n    public FastVectorDB() {\r\n        if (NATIVE_AVAILABLE) {\r\n            this.ptr      = FastVectorDBNative.create();\r\n            this.fallback = null;\r\n        } else {\r\n            this.ptr      = 0L;\r\n            this.fallback = new InMemoryVectorStore();\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public void insert(VectorEntry entry) {\r\n        checkOpen();\r\n        if (fallback != null) {\r\n            fallback.insert(entry);\r\n            return;\r\n        }\r\n        FastVectorDBNative.insert(ptr, entry.id(), entry.vector());\r\n        textMap.put(entry.id(), entry);\r\n    }\r\n\r\n    @Override\r\n    public List<SearchResult> search(float[] query, int k) {\r\n        checkOpen();\r\n        if (fallback != null) {\r\n            return fallback.search(query, k);\r\n        }\r\n        int[] raw = FastVectorDBNative.search(ptr, query, k);\r\n        List<SearchResult> results = new ArrayList<>(k);\r\n        for (int i = 0; i < raw.length - 1; i += 2) {\r\n            int   id    = raw[i];\r\n            float score = Float.intBitsToFloat(raw[i + 1]);\r\n            VectorEntry entry = textMap.getOrDefault(id, new VectorEntry(id, new float[0], \"\"));\r\n            results.add(new SearchResult(entry, score));\r\n        }\r\n        return results;\r\n    }\r\n\r\n    @Override\r\n    public int size() {\r\n        checkOpen();\r\n        return fallback != null ? fallback.size() : FastVectorDBNative.size(ptr);\r\n    }\r\n\r\n    @Override\r\n    public void clear() {\r\n        checkOpen();\r\n        if (fallback != null) {\r\n            fallback.clear();\r\n        } else {\r\n            FastVectorDBNative.clear(ptr);\r\n            textMap.clear();\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public void close() {\r\n        if (!closed) {\r\n            closed = true;\r\n            if (fallback == null) {\r\n                FastVectorDBNative.free(ptr);\r\n            }\r\n        }\r\n    }\r\n\r\n    public static boolean isNativeAvailable() {\r\n        return NATIVE_AVAILABLE;\r\n    }\r\n\r\n    private void checkOpen() {\r\n        if (closed) throw new IllegalStateException(\"FastVectorDB is closed\");\r\n    }\r\n}\r\n
+package fastaivectordb;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Ultrafast vector store backed by a native C++ engine (JNI).
+ * Automatically falls back to {@link InMemoryVectorStore} if the native
+ * library cannot be loaded (e.g., during tests or when the DLL is absent).
+ */
+public final class FastVectorDB implements VectorStore {
+
+    private static final boolean NATIVE_AVAILABLE;
+
+    static {
+        boolean loaded = false;
+        try {
+            System.loadLibrary("fastvectordb");
+            loaded = true;
+        } catch (UnsatisfiedLinkError e) {
+            String userDir = System.getProperty("user.dir");
+            String[] dirs = {
+                userDir + "\\lib\\",
+                userDir + "\\build\\",
+                userDir + "\\"
+            };
+            for (String dir : dirs) {
+                try {
+                    System.load(dir + "fastvectordb.dll");
+                    loaded = true;
+                    break;
+                } catch (UnsatisfiedLinkError ignored) {}
+            }
+            if (!loaded) {
+                System.err.println("FastVectorDB: native lib not found — using Java fallback.");
+            }
+        }
+        NATIVE_AVAILABLE = loaded;
+    }
+
+    private final long ptr;
+    private final InMemoryVectorStore fallback;
+    private final Map<Integer, VectorEntry> textMap = new ConcurrentHashMap<>();
+    private volatile boolean closed = false;
+
+    public FastVectorDB() {
+        if (NATIVE_AVAILABLE) {
+            this.ptr      = FastVectorDBNative.create();
+            this.fallback = null;
+        } else {
+            this.ptr      = 0L;
+            this.fallback = new InMemoryVectorStore();
+        }
+    }
+
+    @Override
+    public void insert(VectorEntry entry) {
+        checkOpen();
+        if (fallback != null) {
+            fallback.insert(entry);
+            return;
+        }
+        FastVectorDBNative.insert(ptr, entry.id(), entry.vector());
+        textMap.put(entry.id(), entry);
+    }
+
+    @Override
+    public List<SearchResult> search(float[] query, int k) {
+        checkOpen();
+        if (fallback != null) {
+            return fallback.search(query, k);
+        }
+        int[] raw = FastVectorDBNative.search(ptr, query, k);
+        List<SearchResult> results = new ArrayList<>(k);
+        for (int i = 0; i < raw.length - 1; i += 2) {
+            int   id    = raw[i];
+            float score = Float.intBitsToFloat(raw[i + 1]);
+            VectorEntry entry = textMap.getOrDefault(id, new VectorEntry(id, new float[0], ""));
+            results.add(new SearchResult(entry, score));
+        }
+        return results;
+    }
+
+    @Override
+    public int size() {
+        checkOpen();
+        return fallback != null ? fallback.size() : FastVectorDBNative.size(ptr);
+    }
+
+    @Override
+    public void clear() {
+        checkOpen();
+        if (fallback != null) {
+            fallback.clear();
+        } else {
+            FastVectorDBNative.clear(ptr);
+            textMap.clear();
+        }
+    }
+
+    @Override
+    public void close() {
+        if (!closed) {
+            closed = true;
+            if (fallback == null) {
+                FastVectorDBNative.free(ptr);
+            }
+        }
+    }
+
+    public static boolean isNativeAvailable() {
+        return NATIVE_AVAILABLE;
+    }
+
+    private void checkOpen() {
+        if (closed) throw new IllegalStateException("FastVectorDB is closed");
+    }
+}
