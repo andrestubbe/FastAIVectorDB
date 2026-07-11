@@ -1,6 +1,6 @@
-fastaivectordb\FastVectorDB.class
-fastaivectordb\FastVectorDBNative.class
 fastaivectordb\InMemoryVectorStore.class
-fastaivectordb\VectorEntry.class
 fastaivectordb\SearchResult.class
 fastaivectordb\VectorStore.class
+fastaivectordb\FastVectorDB.class
+fastaivectordb\FastVectorDBNative.class
+fastaivectordb\VectorEntry.class

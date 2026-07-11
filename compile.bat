@@ -1,1 +1,83 @@
-@echo off\r\n:: FastAIVectorDB Native DLL Compiler Script\r\n:: Auto-detects Visual Studio and JAVA_HOME\r\n\r\necho ========================================\r\necho FastAIVectorDB Native Library Builder\r\necho ========================================\r\n\r\n:: Configuration\r\nset LIB_NAME=fastvectordb\r\n\r\n:: Try to find VS using vswhere.exe (most reliable)\r\nset "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"\r\nif exist "%VSWHERE%" (\r\n    for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (\r\n        set "VS_PATH=%%i"\r\n    )\r\n)\r\n\r\n:: Fallback: Check standard paths if vswhere didn't work\r\nif not defined VS_PATH (\r\n    if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (\r\n        set "VS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Community"\r\n    ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" (\r\n        set "VS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Enterprise"\r\n    ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvars64.bat" (\r\n        set "VS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Professional"\r\n    ) else if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (\r\n        set "VS_PATH=C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"\r\n    ) else if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" (\r\n        set "VS_PATH=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community"\r\n    )\r\n)\r\n\r\nif not defined VS_PATH (\r\n    echo ERROR: Visual Studio not found!\r\n    echo Please install Visual Studio 2019 or 2022 with "Desktop development with C++"\r\n    exit /b 1\r\n)\r\n\r\necho Found Visual Studio at: %VS_PATH%\r\n\r\n:: Try to detect JAVA_HOME if not set\r\nif not defined JAVA_HOME (\r\n    if exist "C:\Program Files\Java\jdk-25" (\r\n        set "JAVA_HOME=C:\Program Files\Java\jdk-25"\r\n    ) else if exist "C:\Program Files\Eclipse Adoptium\jdk-17-hotspot" (\r\n        set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17-hotspot"\r\n    ) else if exist "C:\Program Files\Java\jdk-17" (\r\n        set "JAVA_HOME=C:\Program Files\Java\jdk-17"\r\n    )\r\n)\r\n\r\nif not defined JAVA_HOME (\r\n    echo ERROR: JAVA_HOME not set!\r\n    exit /b 1\r\n)\r\n\r\necho Using JAVA_HOME: %JAVA_HOME%\r\n\r\n:: Setup environment\r\ncall "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"\r\n\r\n:: Create build directory\r\nif not exist build mkdir build\r\n\r\n:: Compile C++ source\r\ncl.exe /O2 /W3 /MD /EHsc /LD ^\r\n   /I "%JAVA_HOME%\include" ^\r\n   /I "%JAVA_HOME%\include\win32" ^\r\n   /Fo:build\ ^\r\n   /Fe:build\%LIB_NAME%.dll ^\r\n   native\*.cpp ^\r\n   /link /DLL /MACHINE:X64 /DEF:native\%LIB_NAME%.def\r\n\r\nif %ERRORLEVEL% == 0 (\r\n    echo.\r\n    echo [SUCCESS] DLL built at: build\%LIB_NAME%.dll\r\n) else (\r\n    echo.\r\n    echo [FAILED] Compilation failed.\r\n    exit /b 1\r\n)\r\n\r\necho.\r\npause\r\n
+@echo off
+:: FastAIVectorDB Native DLL Compiler Script
+:: Auto-detects Visual Studio and JAVA_HOME
+
+echo ========================================
+echo FastAIVectorDB Native Library Builder
+echo ========================================
+
+:: Configuration
+set LIB_NAME=fastvectordb
+
+:: Try to find VS using vswhere.exe (most reliable)
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+if exist "%VSWHERE%" (
+    for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
+        set "VS_PATH=%%i"
+    )
+)
+
+:: Fallback: Check standard paths if vswhere didn't work
+if not defined VS_PATH (
+    if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (
+        set "VS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Community"
+    ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" (
+        set "VS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+    ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvars64.bat" (
+        set "VS_PATH=C:\Program Files\Microsoft Visual Studio\2022\Professional"
+    ) else if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" (
+        set "VS_PATH=C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"
+    ) else if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" (
+        set "VS_PATH=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community"
+    )
+)
+
+if not defined VS_PATH (
+    echo ERROR: Visual Studio not found!
+    echo Please install Visual Studio 2019 or 2022 with "Desktop development with C++"
+    exit /b 1
+)
+
+echo Found Visual Studio at: %VS_PATH%
+
+:: Try to detect JAVA_HOME if not set
+if not defined JAVA_HOME (
+    if exist "C:\Program Files\Java\jdk-25" (
+        set "JAVA_HOME=C:\Program Files\Java\jdk-25"
+    ) else if exist "C:\Program Files\Eclipse Adoptium\jdk-17-hotspot" (
+        set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17-hotspot"
+    ) else if exist "C:\Program Files\Java\jdk-17" (
+        set "JAVA_HOME=C:\Program Files\Java\jdk-17"
+    )
+)
+
+if not defined JAVA_HOME (
+    echo ERROR: JAVA_HOME not set!
+    exit /b 1
+)
+
+echo Using JAVA_HOME: %JAVA_HOME%
+
+:: Setup environment
+call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+
+:: Create build directory
+if not exist build mkdir build
+
+:: Compile C++ source
+cl.exe /O2 /W3 /MD /EHsc /LD /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS ^
+   /I "%JAVA_HOME%\include" ^
+   /I "%JAVA_HOME%\include\win32" ^
+   /Fo:build\ ^
+   /Fe:build\%LIB_NAME%.dll ^
+   native\*.cpp ^
+   /link /DLL /MACHINE:X64 /DEF:native\%LIB_NAME%.def
+
+if %ERRORLEVEL% == 0 (
+    echo.
+    echo [SUCCESS] DLL built at: build\%LIB_NAME%.dll
+) else (
+    echo.
+    echo [FAILED] Compilation failed.
+    exit /b 1
+)

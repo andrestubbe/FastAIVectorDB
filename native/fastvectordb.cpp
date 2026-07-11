@@ -90,7 +90,7 @@ JNIEXPORT jintArray JNICALL Java_fastaivectordb_FastVectorDBNative_search
     std::vector<std::pair<float, int>> scores;
     scores.reserve(idx->entries.size());
     for (const auto& e : idx->entries) {
-        int len = (int)std::min((size_t)qlen, e.vector.size());
+        int len = (int)(std::min)((size_t)qlen, e.vector.size());
         float score = cosineSimilarity(query.data(), e.vector.data(), len);
         scores.emplace_back(score, e.id);
     }
@@ -99,7 +99,7 @@ JNIEXPORT jintArray JNICALL Java_fastaivectordb_FastVectorDBNative_search
     std::sort(scores.begin(), scores.end(),
               [](const auto& a, const auto& b) { return a.first > b.first; });
 
-    int actual = (int)std::min((size_t)k, scores.size());
+    int actual = (int)(std::min)((size_t)k, scores.size());
 
     // Return interleaved [id, Float.floatToIntBits(score), ...]
     jintArray result = env->NewIntArray(actual * 2);
