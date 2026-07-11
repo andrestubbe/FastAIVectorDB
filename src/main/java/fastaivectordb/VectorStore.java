@@ -12,6 +12,10 @@ public interface VectorStore extends AutoCloseable {
 
     void clear();
 
+    void save(String path);
+
+    void load(String path);
+
     @Override
     default void close() throws Exception {
     }

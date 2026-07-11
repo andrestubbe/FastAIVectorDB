@@ -126,3 +126,54 @@ JNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_free
   (JNIEnv* env, jclass, jlong ptr) {
     delete reinterpret_cast<Index*>(ptr);
 }
+
+JNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_save
+  (JNIEnv* env, jclass, jlong ptr, jstring path) {
+    Index* idx = reinterpret_cast<Index*>(ptr);
+    const char* cpath = env->GetStringUTFChars(path, nullptr);
+    if (!cpath) return;
+
+    FILE* f = fopen(cpath, "wb");
+    if (f) {
+        uint32_t size = (uint32_t)idx->entries.size();
+        fwrite(&size, sizeof(uint32_t), 1, f);
+        for (const auto& e : idx->entries) {
+            fwrite(&e.id, sizeof(int), 1, f);
+            uint32_t vlen = (uint32_t)e.vector.size();
+            fwrite(&vlen, sizeof(uint32_t), 1, f);
+            if (vlen > 0) {
+                fwrite(e.vector.data(), sizeof(float), vlen, f);
+            }
+        }
+        fclose(f);
+    }
+    env->ReleaseStringUTFChars(path, cpath);
+}
+
+JNIEXPORT void JNICALL Java_fastaivectordb_FastVectorDBNative_load
+  (JNIEnv* env, jclass, jlong ptr, jstring path) {
+    Index* idx = reinterpret_cast<Index*>(ptr);
+    const char* cpath = env->GetStringUTFChars(path, nullptr);
+    if (!cpath) return;
+
+    FILE* f = fopen(cpath, "rb");
+    if (f) {
+        idx->entries.clear();
+        uint32_t size = 0;
+        if (fread(&size, sizeof(uint32_t), 1, f) == 1) {
+            for (uint32_t i = 0; i < size; i++) {
+                Entry e;
+                if (fread(&e.id, sizeof(int), 1, f) != 1) break;
+                uint32_t vlen = 0;
+                if (fread(&vlen, sizeof(uint32_t), 1, f) != 1) break;
+                e.vector.resize(vlen);
+                if (vlen > 0) {
+                    if (fread(e.vector.data(), sizeof(float), vlen, f) != vlen) break;
+                }
+                idx->entries.push_back(std::move(e));
+            }
+        }
+        fclose(f);
+    }
+    env->ReleaseStringUTFChars(path, cpath);
+}

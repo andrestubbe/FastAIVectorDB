@@ -38,6 +38,44 @@ public final class InMemoryVectorStore implements VectorStore {
         entries.clear();
     }
 
+    @Override
+    public synchronized void save(String path) {
+        try (java.io.DataOutputStream out = new java.io.DataOutputStream(new java.io.FileOutputStream(path))) {
+            out.writeInt(entries.size());
+            for (VectorEntry e : entries) {
+                out.writeInt(e.id());
+                out.writeUTF(e.text());
+                out.writeInt(e.vector().length);
+                for (float f : e.vector()) {
+                    out.writeFloat(f);
+                }
+            }
+        } catch (java.io.IOException ex) {
+            throw new RuntimeException("Failed to save InMemoryVectorStore: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public synchronized void load(String path) {
+        if (!new java.io.File(path).exists()) return;
+        try (java.io.DataInputStream in = new java.io.DataInputStream(new java.io.FileInputStream(path))) {
+            entries.clear();
+            int count = in.readInt();
+            for (int i = 0; i < count; i++) {
+                int id = in.readInt();
+                String text = in.readUTF();
+                int len = in.readInt();
+                float[] vec = new float[len];
+                for (int j = 0; j < len; j++) {
+                    vec[j] = in.readFloat();
+                }
+                entries.add(new VectorEntry(id, vec, text));
+            }
+        } catch (java.io.IOException ex) {
+            throw new RuntimeException("Failed to load InMemoryVectorStore: " + ex.getMessage(), ex);
+        }
+    }
+
     private static float cosineSimilarity(float[] a, float[] b) {
         int len = Math.min(a.length, b.length);
         float dot = 0f, normA = 0f, normB = 0f;

@@ -1,1 +1,24 @@
-#ifndef FASTVECTORDB_H\r\n#define FASTVECTORDB_H\r\n\r\n#include <jni.h>\r\n\r\n#ifdef __cplusplus\r\nextern "C" {\r\n#endif\r\n\r\n// Export declarations (Matches fastvectordb.def)\r\nJNIEXPORT jlong  JNICALL Java_fastaivectordb_FastVectorDBNative_create  (JNIEnv*, jclass);\r\nJNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_insert  (JNIEnv*, jclass, jlong, jint, jfloatArray);\r\nJNIEXPORT jintArray JNICALL Java_fastaivectordb_FastVectorDBNative_search(JNIEnv*, jclass, jlong, jfloatArray, jint);\r\nJNIEXPORT jint   JNICALL Java_fastaivectordb_FastVectorDBNative_size    (JNIEnv*, jclass, jlong);\r\nJNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_clear   (JNIEnv*, jclass, jlong);\r\nJNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_free    (JNIEnv*, jclass, jlong);\r\n\r\n#ifdef __cplusplus\r\n}\r\n#endif\r\n\r\n#endif // FASTVECTORDB_H\r\n
+#ifndef FASTVECTORDB_H
+#define FASTVECTORDB_H
+
+#include <jni.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Export declarations (Matches fastvectordb.def)
+JNIEXPORT jlong  JNICALL Java_fastaivectordb_FastVectorDBNative_create  (JNIEnv*, jclass);
+JNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_insert  (JNIEnv*, jclass, jlong, jint, jfloatArray);
+JNIEXPORT jintArray JNICALL Java_fastaivectordb_FastVectorDBNative_search(JNIEnv*, jclass, jlong, jfloatArray, jint);
+JNIEXPORT jint   JNICALL Java_fastaivectordb_FastVectorDBNative_size    (JNIEnv*, jclass, jlong);
+JNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_clear   (JNIEnv*, jclass, jlong);
+JNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_free    (JNIEnv*, jclass, jlong);
+JNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_save    (JNIEnv*, jclass, jlong, jstring);
+JNIEXPORT void   JNICALL Java_fastaivectordb_FastVectorDBNative_load    (JNIEnv*, jclass, jlong, jstring);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FASTVECTORDB_H

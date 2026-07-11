@@ -1,1 +1,13 @@
-LIBRARY fastvectordb\r\nEXPORTS\r\n    ; JNI Method Exports\r\n    ; Format: Java_packagename_Classname_methodName\r\n\r\n    Java_fastaivectordb_FastVectorDBNative_create\r\n    Java_fastaivectordb_FastVectorDBNative_insert\r\n    Java_fastaivectordb_FastVectorDBNative_search\r\n    Java_fastaivectordb_FastVectorDBNative_size\r\n    Java_fastaivectordb_FastVectorDBNative_clear\r\n    Java_fastaivectordb_FastVectorDBNative_free\r\n
+LIBRARY fastvectordb
+EXPORTS
+    ; JNI Method Exports
+    ; Format: Java_packagename_Classname_methodName
+
+    Java_fastaivectordb_FastVectorDBNative_create
+    Java_fastaivectordb_FastVectorDBNative_insert
+    Java_fastaivectordb_FastVectorDBNative_search
+    Java_fastaivectordb_FastVectorDBNative_size
+    Java_fastaivectordb_FastVectorDBNative_clear
+    Java_fastaivectordb_FastVectorDBNative_free
+    Java_fastaivectordb_FastVectorDBNative_save
+    Java_fastaivectordb_FastVectorDBNative_load

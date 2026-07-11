@@ -103,6 +103,55 @@ public final class FastVectorDB implements VectorStore {
     }
 
     @Override
+    public void save(String path) {
+        checkOpen();
+        if (fallback != null) {
+            fallback.save(path);
+            return;
+        }
+        // Save binary index via native
+        FastVectorDBNative.save(ptr, path);
+        // Save associated metadata (textMap) to a parallel meta file
+        String metaPath = path + ".meta";
+        try (java.io.DataOutputStream out = new java.io.DataOutputStream(new java.io.FileOutputStream(metaPath))) {
+            out.writeInt(textMap.size());
+            for (Map.Entry<Integer, VectorEntry> entry : textMap.entrySet()) {
+                out.writeInt(entry.getKey());
+                out.writeUTF(entry.getValue().text());
+            }
+        } catch (java.io.IOException ex) {
+            throw new RuntimeException("Failed to save FastVectorDB metadata: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void load(String path) {
+        checkOpen();
+        if (fallback != null) {
+            fallback.load(path);
+            return;
+        }
+        if (!new java.io.File(path).exists()) return;
+        // Load binary index via native
+        FastVectorDBNative.load(ptr, path);
+        // Load associated metadata
+        String metaPath = path + ".meta";
+        if (new java.io.File(metaPath).exists()) {
+            try (java.io.DataInputStream in = new java.io.DataInputStream(new java.io.FileInputStream(metaPath))) {
+                textMap.clear();
+                int count = in.readInt();
+                for (int i = 0; i < count; i++) {
+                    int id = in.readInt();
+                    String text = in.readUTF();
+                    textMap.put(id, new VectorEntry(id, new float[0], text));
+                }
+            } catch (java.io.IOException ex) {
+                throw new RuntimeException("Failed to load FastVectorDB metadata: " + ex.getMessage(), ex);
+            }
+        }
+    }
+
+    @Override
     public void close() {
         if (!closed) {
             closed = true;

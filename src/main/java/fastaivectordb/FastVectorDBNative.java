@@ -17,4 +17,6 @@ final class FastVectorDBNative {
     static native int    size(long ptr);
     static native void   clear(long ptr);
     static native void   free(long ptr);
+    static native void   save(long ptr, String path);
+    static native void   load(long ptr, String path);
 }
