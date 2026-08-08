@@ -1,5 +1,7 @@
-# FastAIVectorDB Development Philosophy
+# FastAIVectorDB Philosophy
 
-1. **Native-First**: Intensive mathematical operations (like cosine similarity scans) are executed in optimized native environments.
-2. **Zero Dependencies**: Keep compiler footprints to a minimum.
-3. **No Allocation**: Eliminate GC pauses in hotspots.
+FastAIVectorDB is engineered around three core principles:
+
+1. **Sub-Millisecond Retrieval**: High-concurrency vector similarity scanning backed by C++ SSE/AVX hardware SIMD acceleration.
+2. **Zero External Infrastructure**: Operates entirely within the JVM process without requiring external Docker instances, Python bridges, or heavy network databases.
+3. **Resilient Hardware Fallback**: Automatic thread-safe pure Java execution if native C++ binaries are missing or restricted in cloud/sandbox environments.

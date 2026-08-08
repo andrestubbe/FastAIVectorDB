@@ -1,28 +1,22 @@
-# FastAIVectorDB API Reference
+# FastAIVectorDB Reference Manual
 
-## Classes
-
-### `VectorEntry`
-A record representing a vector entry inside the DB.
-```java
-public record VectorEntry(int id, float[] vector, String text) {}
-```
-
-### `SearchResult`
-A search hit containing the original entry and the calculated similarity score.
-```java
-public record SearchResult(VectorEntry entry, float score) {}
-```
+## Core API
 
 ### `FastVectorDB`
-The main native/fallback database wrapper implementing `VectorStore`.
+Main entry point for similarity search and vector persistence.
+
 ```java
-public final class FastVectorDB implements VectorStore {
-    public FastVectorDB();
-    public void insert(VectorEntry entry);
-    public List<SearchResult> search(float[] query, int k);
-    public int size();
-    public void clear();
-    public void close();
+try (FastVectorDB db = new FastVectorDB()) {
+    db.insert(new VectorEntry(id, embedding, text));
+    List<SearchResult> hits = db.search(queryVector, topK);
 }
 ```
+
+### `VectorEntry`
+Record holding vector payload:
+* `id` (long): Unique vector identifier.
+* `vector` (float[]): Feature embedding array.
+* `text` (String): Associated text snippet or parent context reference.
+
+### `SearchResult`
+Result record containing matched `VectorEntry` and cosine similarity `score` (float).
