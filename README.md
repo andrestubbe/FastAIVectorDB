@@ -10,7 +10,7 @@
 
 **⚡ Raw JNI performance with pure Java fallbacks — Zero allocation vector database built for high-throughput JVM environments.**
 
-FastAIVectorDB is a **minimalist, hyper-fast JNI vector store** tailored for developers who need maximum similarity lookup performance without running heavy Python processes, Docker instances, or bloated database setups. It features a compiled C++ core utilizing direct memory layout optimization, with a complete pure-Java execution fallback.
+FastAIVectorDB is a **minimalist, hyper-fast JNI vector store** tailored for developers who need maximum similarity lookup performance without running heavy Python processes, Docker instances, or bloated database setups. It is designed to work alongside **[FastContentParse](https://github.com/andrestubbe/FastContentParse)**, **[FastContentChunk](https://github.com/andrestubbe/FastContentChunk)**, and **[FastAIRag](https://github.com/andrestubbe/FastAIRag)** to accelerate vector search and Parent-Child context retention.
 
 [![Showcase](docs/screenshot.png)](https://youtu.be/4dDMeUfrQ3w)
 
