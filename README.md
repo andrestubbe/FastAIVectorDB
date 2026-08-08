@@ -113,11 +113,11 @@ Higher-level RAG framework that orchestrates **[FastContentParse](https://github
 
 ## API Quick Reference
 
-| Method | Description |
-|--------|-------------|
-| `insert(VectorEntry)` | Inserts a vector entry with ID, float[] embedding, and payload. |
-| `search(float[] query, int topK)` | Scans database for top-K cosine similarity matches. |
-| `close()` | Releases native memory allocations and flushes indexes. |
+| Method | Description | Path |
+|--------|-------------|------|
+| `insert(VectorEntry)` | Inserts a vector entry with ID, float[] embedding, and payload. | [Reference →](docs/REFERENCE.md#fastvectordb) |
+| `search(float[], int)` | Scans database for top-K cosine similarity matches. | [Reference →](docs/REFERENCE.md#fastvectordb) |
+| `close()` | Releases native memory allocations and flushes indexes. | [Reference →](docs/REFERENCE.md#fastvectordb) |
 
 ---
 
@@ -200,13 +200,13 @@ MIT License — See [LICENSE](LICENSE) file for details.
 
 ## Related Projects
 
-- [FastContentParse](https://github.com/andrestubbe/FastContentParse) — Java content parser for text extraction and normalization
-- [FastContentChunk](https://github.com/andrestubbe/FastContentChunk) — SIMD tokenizer and multi-mode strategy chunker
-- [FastAIRag](https://github.com/andrestubbe/FastAIRag) — Retrieval-Augmented Generation pipeline
+- [FastContentParse](https://github.com/andrestubbe/FastContentParse) — Standardized Java document parser for text extraction and normalization
+- [FastContentChunk](https://github.com/andrestubbe/FastContentChunk) — High-performance native SIMD tokenizer and multi-mode strategy chunker
+- [FastAIRag](https://github.com/andrestubbe/FastAIRag) — Retrieval-Augmented Generation pipeline client
 - [FastCore](https://github.com/andrestubbe/FastCore) — Native JNI loader for FastJava libraries
+- [FastAI](https://github.com/andrestubbe/fastai) — Unified lightweight AI model client interface
+- [FastAIModel](https://github.com/andrestubbe/FastAIModel) — Embedded ONNX runtime for local feature embeddings
+- [FastAIBot](https://github.com/andrestubbe/FastAIBot) — Autonomous conversational AI bot engine
+- [FastAIAgent](https://github.com/andrestubbe/FastAIAgent) — Autonomous agentic workflow execution framework
 
----
-
-## Part of the FastJava Ecosystem
-
-*Making the JVM faster. Small package. Maximum speed. Zero bloat. 🚀📋*
+Part of the FastJava Ecosystem — Making the JVM faster. Small package. Maximum speed. Zero bloat. 🚀📋
