@@ -1,8 +1,8 @@
 package demo;
 
-import fastvectordb.FastVectorDB;
-import fastvectordb.SearchResult;
-import fastvectordb.VectorEntry;
+import fastaivectordb.FastVectorDB;
+import fastaivectordb.SearchResult;
+import fastaivectordb.VectorEntry;
 
 import java.util.List;
 
