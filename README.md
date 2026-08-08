@@ -170,6 +170,9 @@ Download the latest JARs directly to add them to your classpath:
 1. ⚡ **[FastAIVectorDB-0.1.1.jar](https://github.com/andrestubbe/FastAIVectorDB/releases/download/0.1.1/FastAIVectorDB-0.1.1.jar)** (The Vector Store)
 2. ⚙️ **[fastcore-0.1.0.jar](https://github.com/andrestubbe/FastCore/releases/download/0.1.0/fastcore-0.1.0.jar)** (Required Native JNI Loader)
 
+> [!IMPORTANT]
+> All JARs must be included in your classpath for the native JNI bindings to function correctly.
+
 ---
 
 ## Documentation
