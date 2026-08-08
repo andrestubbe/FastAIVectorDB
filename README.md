@@ -1,10 +1,10 @@
-# FastAIVectorDB 0.1.0 — Ultrafast Native Vector Database for Java
+# FastAIVectorDB 0.1.1 — Ultrafast Native Vector Database for Java
 
-[![Status](https://img.shields.io/badge/status-0.1.0-brightgreen.svg)](https://github.com/andrestubbe/FastAIVectorDB/releases/tag/0.1.0)
+[![Status](https://img.shields.io/badge/status-0.1.1-brightgreen.svg)](https://github.com/andrestubbe/FastAIVectorDB/releases/tag/0.1.1)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java](https://img.shields.io/badge/Java-17+-blue.svg)](https://www.java.com)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010+-lightgrey.svg)]()
-[![JitPack](https://img.shields.io/badge/JitPack-0.1.0-green.svg)](https://jitpack.io/#andrestubbe/FastAIVectorDB)
+[![JitPack](https://img.shields.io/badge/JitPack-0.1.1-green.svg)](https://jitpack.io/#andrestubbe/FastAIVectorDB)
 
 ---
 
@@ -138,7 +138,7 @@ Add the JitPack repository and the dependency to your `pom.xml`:
     <dependency>
         <groupId>com.github.andrestubbe</groupId>
         <artifactId>FastAIVectorDB</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
     </dependency>
     <!-- Required for native library loading -->
     <dependency>
@@ -157,7 +157,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.andrestubbe:FastAIVectorDB:0.1.0'
+    implementation 'com.github.andrestubbe:FastAIVectorDB:0.1.1'
     // Required for native library loading
     implementation 'com.github.andrestubbe:FastCore:0.1.0'
 }
@@ -167,7 +167,7 @@ dependencies {
 
 Download the latest JARs directly to add them to your classpath:
 
-1. ⚡ **[FastAIVectorDB-0.1.0.jar](https://github.com/andrestubbe/FastAIVectorDB/releases/download/0.1.0/FastAIVectorDB-0.1.0.jar)** (The Vector Store)
+1. ⚡ **[FastAIVectorDB-0.1.1.jar](https://github.com/andrestubbe/FastAIVectorDB/releases/download/0.1.1/FastAIVectorDB-0.1.1.jar)** (The Vector Store)
 2. ⚙️ **[fastcore-0.1.0.jar](https://github.com/andrestubbe/FastCore/releases/download/0.1.0/fastcore-0.1.0.jar)** (Required Native JNI Loader)
 
 ---
