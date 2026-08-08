@@ -103,7 +103,7 @@ Converts unstructured binary documents (PDF, RTF, Markdown, TXT) into normalized
 **[FastContentChunk](https://github.com/andrestubbe/FastContentChunk) (The Strategy Engine)**  
 Segments normalized text streams into contextual passages with Parent-Child context.
 
-**[FastAIVectorDB](https://github.com/andrestubbe/FastAIVectorDB) (This Library — The Vector Store)**  
+**FastAIVectorDB (This Library — The Vector Store)**  
 High-speed native C++ SIMD vector database storing small `chunk.text` embeddings for sub-5ms similarity retrieval.
 
 **[FastAIRag](https://github.com/andrestubbe/FastAIRag) (The Orchestration Pipeline)**  
