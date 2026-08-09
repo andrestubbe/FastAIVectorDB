@@ -145,6 +145,35 @@ Higher-level RAG framework that orchestrates **[FastContentParse](https://github
 
 ---
 
+## Recommended ONNX Embedding Models
+
+Download any of these models from HuggingFace and pass the paths to `Embedder.onnx()`:
+
+| Model | Size | Dimensions | HuggingFace Link |
+|-------|------|-----------|-----------------|
+| **BGE-Micro-v2** ⭐ Recommended | ~23 MB | 384 | [TaylorAI/bge-micro-v2](https://huggingface.co/TaylorAI/bge-micro-v2/tree/main/onnx) |
+| **BGE-Small-EN-v1.5** | ~130 MB | 384 | [BAAI/bge-small-en-v1.5](https://huggingface.co/BAAI/bge-small-en-v1.5/tree/main/onnx) |
+| **E5-Small-v2** | ~130 MB | 384 | [intfloat/e5-small-v2](https://huggingface.co/intfloat/e5-small-v2/tree/main/onnx) |
+| **BGE-Base-EN-v1.5** | ~440 MB | 768 | [BAAI/bge-base-en-v1.5](https://huggingface.co/BAAI/bge-base-en-v1.5/tree/main/onnx) |
+
+### How to Download (PowerShell)
+
+```powershell
+# Download BGE-Micro-v2 (recommended, ~23 MB)
+New-Item -ItemType Directory -Force -Path models
+Invoke-WebRequest -Uri "https://huggingface.co/TaylorAI/bge-micro-v2/resolve/main/onnx/model.onnx" `
+    -OutFile "models/bge-micro-v2.onnx" `
+    -Headers @{Authorization="Bearer hf_YOUR_TOKEN"} -MaximumRedirection 10
+Invoke-WebRequest -Uri "https://huggingface.co/TaylorAI/bge-micro-v2/resolve/main/tokenizer.json" `
+    -OutFile "models/tokenizer.json" `
+    -Headers @{Authorization="Bearer hf_YOUR_TOKEN"} -MaximumRedirection 10
+```
+
+> [!NOTE]
+> A free HuggingFace account and Read token are required. Create one at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+
+---
+
 ## Installation
 
 ### Option 1: Maven (Recommended)
