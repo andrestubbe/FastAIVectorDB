@@ -1,0 +1,28 @@
+TITLE:
+FastAIVectorDB: JMH Benchmark - Sub-Millisecond Native SIMD Vector Search 🚀
+
+DESCRIPTION:
+Official OpenJDK JMH (Java Microbenchmark Harness) performance benchmark for FastAIVectorDB. Evaluating native C++ SSE2/AVX2 Cosine similarity search latency across 100, 1,000, and 10,000 vector scale indices.
+
+BENCHMARK RESULTS (JMH):
+- 100 Vectors Search: < 40 µs
+- 1,000 Vectors Search: < 120 µs
+- 10,000 Vectors SIMD Search: < 469 µs (Sub-Millisecond Retrieval)
+- Heap Allocation: 0 Bytes during search loop (Zero-GC)
+
+RUN BENCHMARK LOCALLY:
+Execute `run-benchmark.bat` in the repository root.
+
+FASTJAVA RAG PIPELINE REPOSITORIES:
+1. FastContentParse: https://github.com/andrestubbe/FastContentParse
+2. FastContentChunk: https://github.com/andrestubbe/FastContentChunk
+3. FastAIVectorDB: https://github.com/andrestubbe/FastAIVectorDB
+4. FastAIRag: https://github.com/andrestubbe/FastAIRag
+
+Ecosystem Overview: https://github.com/andrestubbe/FastJava
+
+Part of the FastJava Ecosystem — Making the JVM faster.
+Made with ⚡ by Andre Stubbe
+
+TAGS:
+Java, FastJava, JMH, Benchmark, FastAIVectorDB, SIMD, Vector Database, Cosine Similarity, AVX2, Performance
