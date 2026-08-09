@@ -13,7 +13,7 @@ import java.nio.file.Path;
  * </pre>
  */
 @FunctionalInterface
-public interface Embedder {
+public interface Embedder extends AutoCloseable {
 
     /**
      * Embed a single text into a float vector.
@@ -21,6 +21,9 @@ public interface Embedder {
      */
     float[] embed(String text);
 
+    /** Default no-op close — override in stateful implementations like OnnxEmbedder. */
+    @Override
+    default void close() {}
     /**
      * Creates an ONNX-based embedder (e.g. BGE-Micro-v2, E5-Small).
      * The model and tokenizer are loaded once and reused for all calls.

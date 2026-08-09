@@ -1,10 +1,10 @@
-# FastAIVectorDB 0.1.1 — Ultrafast Native Vector Database for Java
+# FastAIVectorDB 0.1.2 — Ultrafast Native Vector Database for Java
 
-[![Status](https://img.shields.io/badge/status-0.1.1-brightgreen.svg)](https://github.com/andrestubbe/FastAIVectorDB/releases/tag/0.1.1)
+[![Status](https://img.shields.io/badge/status-0.1.2-brightgreen.svg)](https://github.com/andrestubbe/FastAIVectorDB/releases/tag/0.1.2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java](https://img.shields.io/badge/Java-17+-blue.svg)](https://www.java.com)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010+-lightgrey.svg)]()
-[![JitPack](https://img.shields.io/badge/JitPack-0.1.1-green.svg)](https://jitpack.io/#andrestubbe/FastAIVectorDB)
+[![JitPack](https://img.shields.io/badge/JitPack-0.1.2-green.svg)](https://jitpack.io/#andrestubbe/FastAIVectorDB)
 
 ---
 
@@ -16,32 +16,44 @@ FastAIVectorDB is a **minimalist, hyper-fast JNI vector store** tailored for dev
 
 ---
 
-## Quick Start — Example
+## Quick Start — With Built-in ONNX Embedder
 
 ```java
+import fastaivectordb.Embedder;
 import fastaivectordb.FastVectorDB;
 import fastaivectordb.VectorEntry;
 import fastaivectordb.SearchResult;
-import java.util.List;
 
 public class Demo {
     public static void main(String[] args) {
-        try (FastVectorDB db = new FastVectorDB()) {
-            float[] embedding = new float[]{0.1f, -0.2f, 0.89f};
+        // Load any ONNX embedding model — swap model path to change model
+        try (Embedder embedder = Embedder.onnx("models/bge-micro-v2.onnx", "models/tokenizer.json");
+             FastVectorDB db  = new FastVectorDB()) {
 
-            // 1. Insert Vector Entry into Native SIMD Store
-            db.insert(new VectorEntry(0, embedding, "Document snippet content"));
+            // 1. Embed and insert a document chunk
+            float[] vec = embedder.embed("Der Haushaltsplan wird durch Gesetz festgestellt.");
+            db.insert(new VectorEntry(0, vec, "§ 1 BHO"));
 
-            // 2. Perform k-Nearest Neighbors Cosine Similarity Scan
-            List<SearchResult> hits = db.search(new float[]{0.1f, -0.1f, 0.9f}, 5);
+            // 2. Embed the query and search
+            float[] queryVec = embedder.embed("Wie wird der Haushaltsplan festgestellt?");
+            List<SearchResult> hits = db.search(queryVec, 1);
 
-            // 3. Inspect Top Match and Similarity Score
-            for (SearchResult hit : hits) {
-                System.out.printf("ID: %d | Score: %.4f | Payload: %s\n",
-                    hit.entry().id(), hit.score(), hit.entry().text());
-            }
+            // 3. Inspect result
+            hits.forEach(h -> System.out.printf("ID: %d | Score: %.4f | %s%n",
+                h.entry().id(), h.score(), h.entry().text()));
         }
     }
+}
+```
+
+## Quick Start — Raw Vectors (no embedder)
+
+```java
+try (FastVectorDB db = new FastVectorDB()) {
+    db.insert(new VectorEntry(0, new float[]{0.1f, -0.2f, 0.89f}, "Document snippet"));
+    List<SearchResult> hits = db.search(new float[]{0.1f, -0.1f, 0.9f}, 5);
+    hits.forEach(h -> System.out.printf("ID: %d | Score: %.4f | %s%n",
+        h.entry().id(), h.score(), h.entry().text()));
 }
 ```
 
@@ -76,6 +88,8 @@ Traditional vector databases force developers to run external Docker containers,
 ## Key Features
 
 * **🚀 Native SIMD Performance** — Highly optimized vector similarity operations written in C++ linked via JNI.
+* **🧩 Pluggable Embedder API** — Built-in `Embedder` interface with `Embedder.onnx()` factory: swap any ONNX model in one line.
+* **🤖 ONNX Embedding Support** — Ships with `OnnxEmbedder` (BGE-Micro-v2, E5-Small, etc.) via ONNX Runtime + DJL Tokenizer.
 * **🛡️ Pure-Java Fallback** — Instant, automatic fallback to a thread-safe `InMemoryVectorStore` if native DLL is missing.
 * **⚡ Zero Memory Overhead** — Direct memory mappings preventing garbage collector stalls on vector queries.
 * **🧠 Parent-Child Vector Payload** — Retains both small `chunk.text` for vector indexing and rich `chunk.parentText` for LLM context.
@@ -113,11 +127,21 @@ Higher-level RAG framework that orchestrates **[FastContentParse](https://github
 
 ## API Quick Reference
 
-| Method | Description | Path |
-|--------|-------------|------|
-| `insert(VectorEntry)` | Inserts a vector entry with ID, float[] embedding, and payload. | [Reference →](docs/REFERENCE.md#fastvectordb) |
-| `search(float[], int)` | Scans database for top-K cosine similarity matches. | [Reference →](docs/REFERENCE.md#fastvectordb) |
-| `close()` | Releases native memory allocations and flushes indexes. | [Reference →](docs/REFERENCE.md#fastvectordb) |
+### `Embedder` — Pluggable Embedding Interface
+
+| Method | Description |
+|--------|-------------|
+| `Embedder.onnx(modelPath, tokenizerPath)` | Creates an ONNX embedder (BGE-Micro-v2, E5-Small, …) |
+| `embed(String text)` | Returns L2-normalized `float[]` vector |
+| `close()` | Releases ONNX session and tokenizer resources |
+
+### `FastVectorDB` — SIMD Vector Store
+
+| Method | Description |
+|--------|-------------|
+| `insert(VectorEntry)` | Inserts a vector entry with ID, float[] embedding, and payload. |
+| `search(float[], int)` | Scans database for top-K cosine similarity matches. |
+| `close()` | Releases native memory allocations and flushes indexes. |
 
 ---
 
@@ -138,13 +162,7 @@ Add the JitPack repository and the dependency to your `pom.xml`:
     <dependency>
         <groupId>com.github.andrestubbe</groupId>
         <artifactId>FastAIVectorDB</artifactId>
-        <version>0.1.1</version>
-    </dependency>
-    <!-- Required for native library loading -->
-    <dependency>
-        <groupId>com.github.andrestubbe</groupId>
-        <artifactId>FastCore</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.2</version>
     </dependency>
 </dependencies>
 ```
@@ -157,9 +175,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.andrestubbe:FastAIVectorDB:0.1.1'
-    // Required for native library loading
-    implementation 'com.github.andrestubbe:FastCore:0.1.0'
+    implementation 'com.github.andrestubbe:FastAIVectorDB:0.1.2'
 }
 ```
 
@@ -167,8 +183,7 @@ dependencies {
 
 Download the latest JARs directly to add them to your classpath:
 
-1. ⚡ **[FastAIVectorDB-0.1.1.jar](https://github.com/andrestubbe/FastAIVectorDB/releases/download/0.1.1/FastAIVectorDB-0.1.1.jar)** (The Vector Store)
-2. ⚙️ **[fastcore-0.1.0.jar](https://github.com/andrestubbe/FastCore/releases/download/0.1.0/fastcore-0.1.0.jar)** (Required Native JNI Loader)
+1. ⚡ **[FastAIVectorDB-0.1.2.jar](https://github.com/andrestubbe/FastAIVectorDB/releases/download/0.1.2/FastAIVectorDB-0.1.2.jar)**
 
 > [!IMPORTANT]
 > All JARs must be included in your classpath for the native JNI bindings to function correctly.
