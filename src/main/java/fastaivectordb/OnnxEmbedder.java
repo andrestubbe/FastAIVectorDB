@@ -3,9 +3,9 @@ package fastaivectordb;
 import ai.djl.huggingface.tokenizers.Encoding;
 import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
 import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+import fastaimodel.FastAIOnnxModel;
 
 import java.nio.LongBuffer;
 import java.nio.file.Path;
@@ -14,21 +14,18 @@ import java.util.Map;
 /**
  * ONNX-based sentence embedder (e.g. TaylorAI/bge-micro-v2, E5-Small).
  * Produces L2-normalized float vectors via mean-pooling over hidden states.
+ * Wraps {@link FastAIOnnxModel} for session and environment management.
  * Use via {@link Embedder#onnx(Path, Path)}.
  */
 public final class OnnxEmbedder implements Embedder, AutoCloseable {
 
     private final HuggingFaceTokenizer tokenizer;
-    private final OrtEnvironment env;
-    private final OrtSession session;
+    private final FastAIOnnxModel model;
 
     public OnnxEmbedder(Path modelPath, Path tokenizerPath) {
         try {
             this.tokenizer = HuggingFaceTokenizer.newInstance(tokenizerPath);
-            this.env = OrtEnvironment.getEnvironment();
-            OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
-            opts.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT);
-            this.session = env.createSession(modelPath.toString(), opts);
+            this.model = new FastAIOnnxModel(modelPath.toString());
         } catch (Exception e) {
             throw new RuntimeException("Failed to load ONNX embedder from: " + modelPath, e);
         }
@@ -43,10 +40,10 @@ public final class OnnxEmbedder implements Embedder, AutoCloseable {
             long[] tokenTypeIds  = enc.getTypeIds();
             long[] shape = {1, inputIds.length};
 
-            try (OnnxTensor tIds  = OnnxTensor.createTensor(env, LongBuffer.wrap(inputIds),      shape);
-                 OnnxTensor tMask = OnnxTensor.createTensor(env, LongBuffer.wrap(attentionMask), shape);
-                 OnnxTensor tType = OnnxTensor.createTensor(env, LongBuffer.wrap(tokenTypeIds),  shape);
-                 OrtSession.Result result = session.run(Map.of(
+            try (OnnxTensor tIds  = OnnxTensor.createTensor(model.getEnv(), LongBuffer.wrap(inputIds),      shape);
+                 OnnxTensor tMask = OnnxTensor.createTensor(model.getEnv(), LongBuffer.wrap(attentionMask), shape);
+                 OnnxTensor tType = OnnxTensor.createTensor(model.getEnv(), LongBuffer.wrap(tokenTypeIds),  shape);
+                 OrtSession.Result result = model.run(Map.of(
                          "input_ids",      tIds,
                          "attention_mask", tMask,
                          "token_type_ids", tType))) {
@@ -84,10 +81,9 @@ public final class OnnxEmbedder implements Embedder, AutoCloseable {
     @Override
     public void close() {
         try {
-            if (session  != null) session.close();
-            if (env      != null) env.close();
+            if (model != null) model.close();
             if (tokenizer != null) tokenizer.close();
-        } catch (OrtException e) {
+        } catch (Exception e) {
             System.err.println("OnnxEmbedder close error: " + e.getMessage());
         }
     }
