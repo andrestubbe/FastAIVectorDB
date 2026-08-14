@@ -1,13 +1,13 @@
 # FastAIVectorDB Compilation Guide
 
-## Prerequisites
-* Windows 10/11 x64
-* MSVC Compiler (Visual Studio 2019/2022/2026 Developer Command Prompt)
-* JDK 17+
+## Native C++ MSVC AVX2 Build Chain
 
-## Native Build
-Run the automated build script:
-```powershell
-.\compile.bat
+1. Requirements: Visual Studio 2022 / 2026 with "Desktop development with C++" and JDK 17+.
+2. Open Developer Command Prompt or PowerShell in the repository root.
+3. Run the automated native compilation script:
+
+```cmd
+compile.bat
 ```
-This produces `build/fastvectordb.dll` and places it inside Maven resource targets.
+
+This compiles `fastvectordb.dll` with MSVC AVX2 flags (`/arch:AVX2 /O2`) and copies the output DLL to `src/main/resources/native/` and `src/main/resources/win32-x86-64/`.

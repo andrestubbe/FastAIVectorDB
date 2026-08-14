@@ -1,8 +1,8 @@
-# FastAIVectorDB Roadmap
+# FastAIVectorDB Roadmap & Planned Features
 
-- [x] Initial C++ SIMD native vector similarity engine.
-- [x] Pure Java fallback implementation.
-- [x] Pluggable `Embedder` interface + `OnnxEmbedder` (ONNX Runtime + DJL Tokenizer).
-- [ ] AVX-512 vector distance optimizations.
-- [ ] Disk-backed HNSW (Hierarchical Navigable Small World) index support.
-- [ ] Cross-platform Linux (.so) and macOS (.dylib) native binaries.
+- [x] **v0.1.0** — Initial high-performance native vector database release.
+- [x] **v0.1.1** — Native index persistence support (`save()` and `load()`).
+- [x] **v0.1.2** — Pluggable `Embedder` interface with ONNX Runtime & DJL Tokenizer support.
+- [x] **v0.1.4** — Integrated `FastSIMD` AVX2 256-bit FMA vector dot product acceleration.
+- [ ] **v0.2.0** — HNSW (Hierarchical Navigable Small World) graph index for million-vector scaling.
+- [ ] **v0.3.0** — FastGPU Vulkan compute shader acceleration for batch matrix similarity.
