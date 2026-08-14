@@ -178,7 +178,7 @@ Invoke-WebRequest -Uri "https://huggingface.co/TaylorAI/bge-micro-v2/resolve/mai
 
 ### Option 1: Maven (Recommended)
 
-Add the JitPack repository and the dependency to your `pom.xml`:
+Add the JitPack repository and the complete dependency stack to your `pom.xml`:
 
 ```xml
 <repositories>
@@ -187,11 +187,62 @@ Add the JitPack repository and the dependency to your `pom.xml`:
         <url>https://jitpack.io</url>
     </repository>
 </repositories>
+
 <dependencies>
+    <!-- FastAIVectorDB Vector Store -->
     <dependency>
         <groupId>com.github.andrestubbe</groupId>
         <artifactId>FastAIVectorDB</artifactId>
         <version>0.1.4</version>
+    </dependency>
+
+    <!-- FastSIMD Hardware Vector Acceleration Engine -->
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastSIMD</artifactId>
+        <version>0.1.3</version>
+    </dependency>
+
+    <!-- FastMemory Aligned Allocator -->
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastMemory</artifactId>
+        <version>0.1.1</version>
+    </dependency>
+
+    <!-- FastPointer Address Wrapper -->
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastPointer</artifactId>
+        <version>0.1.1</version>
+    </dependency>
+
+    <!-- FastCore Native Loader -->
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastCore</artifactId>
+        <version>0.1.0</version>
+    </dependency>
+
+    <!-- FastAIModel ONNX Module -->
+    <dependency>
+        <groupId>com.github.andrestubbe.FastAIModel</groupId>
+        <artifactId>fastaimodel-onnx</artifactId>
+        <version>0.1.2</version>
+    </dependency>
+
+    <!-- ONNX Runtime for Local Embeddings -->
+    <dependency>
+        <groupId>com.microsoft.onnxruntime</groupId>
+        <artifactId>onnxruntime</artifactId>
+        <version>1.18.0</version>
+    </dependency>
+
+    <!-- DJL Tokenizer for HuggingFace Models -->
+    <dependency>
+        <groupId>ai.djl.huggingface</groupId>
+        <artifactId>tokenizers</artifactId>
+        <version>0.28.0</version>
     </dependency>
 </dependencies>
 ```
@@ -205,6 +256,13 @@ repositories {
 
 dependencies {
     implementation 'com.github.andrestubbe:FastAIVectorDB:0.1.4'
+    implementation 'com.github.andrestubbe:FastSIMD:0.1.3'
+    implementation 'com.github.andrestubbe:FastMemory:0.1.1'
+    implementation 'com.github.andrestubbe:FastPointer:0.1.1'
+    implementation 'com.github.andrestubbe:FastCore:0.1.0'
+    implementation 'com.github.andrestubbe.FastAIModel:fastaimodel-onnx:0.1.2'
+    implementation 'com.microsoft.onnxruntime:onnxruntime:1.18.0'
+    implementation 'ai.djl.huggingface:tokenizers:0.28.0'
 }
 ```
 
@@ -212,10 +270,14 @@ dependencies {
 
 Download the latest JARs directly to add them to your classpath:
 
-1. ⚡ **[FastAIVectorDB-0.1.2.jar](https://github.com/andrestubbe/FastAIVectorDB/releases/download/0.1.2/FastAIVectorDB-0.1.2.jar)**
+1. ⚡ **[FastAIVectorDB-0.1.4.jar](https://github.com/andrestubbe/FastAIVectorDB/releases/download/0.1.4/FastAIVectorDB-0.1.4.jar)** (SIMD Vector Store Engine)
+2. 🚀 **[FastSIMD-0.1.3.jar](https://github.com/andrestubbe/FastSIMD/releases/download/0.1.3/FastSIMD-0.1.3.jar)** (Hardware Vector Acceleration Engine)
+3. 💾 **[FastMemory-0.1.1.jar](https://github.com/andrestubbe/FastMemory/releases/download/0.1.1/FastMemory-0.1.1.jar)** (32-Byte Aligned Allocator)
+4. 📍 **[FastPointer-0.1.1.jar](https://github.com/andrestubbe/FastPointer/releases/download/0.1.1/FastPointer-0.1.1.jar)** (Primitive Address Wrapper)
+5. ⚙️ **[fastcore-0.1.0.jar](https://github.com/andrestubbe/FastCore/releases/download/0.1.0/fastcore-0.1.0.jar)** (Mandatory Native Loader)
 
 > [!IMPORTANT]
-> All JARs must be included in your classpath for the native JNI bindings to function correctly.
+> All JARs must be included in your classpath for the native JNI vector search bindings to function correctly.
 
 ---
 
