@@ -1,4 +1,4 @@
-# FastAIVectorDB 0.1.2 — Ultrafast Native Vector Database for Java
+# FastAIVectorDB 0.1.4 — Ultrafast Native Vector Database for Java
 
 [![Status](https://img.shields.io/badge/status-0.1.2-brightgreen.svg)](https://github.com/andrestubbe/FastAIVectorDB/releases/tag/0.1.2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -191,7 +191,7 @@ Add the JitPack repository and the dependency to your `pom.xml`:
     <dependency>
         <groupId>com.github.andrestubbe</groupId>
         <artifactId>FastAIVectorDB</artifactId>
-        <version>0.1.2</version>
+        <version>0.1.4</version>
     </dependency>
 </dependencies>
 ```
@@ -204,7 +204,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.andrestubbe:FastAIVectorDB:0.1.2'
+    implementation 'com.github.andrestubbe:FastAIVectorDB:0.1.4'
 }
 ```
 
