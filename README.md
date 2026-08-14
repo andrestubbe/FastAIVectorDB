@@ -12,7 +12,7 @@
 
 FastAIVectorDB is a **minimalist, hyper-fast JNI vector store** tailored for developers who need maximum similarity lookup performance without running heavy Python processes, Docker instances, or bloated database setups. It is designed to work alongside **[FastContentParse](https://github.com/andrestubbe/FastContentParse)**, **[FastContentChunk](https://github.com/andrestubbe/FastContentChunk)**, and **[FastAIRag](https://github.com/andrestubbe/FastAIRag)** to accelerate vector search and Parent-Child context retention.
 
-[![Showcase](docs/screenshot.png)](https://youtu.be/ad32xjTpmvk)
+![docs/screenshot.png](docs/screenshot.png)
 
 ---
 
